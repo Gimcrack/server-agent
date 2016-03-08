@@ -1,0 +1,20 @@
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\MSB Windows Update Management.exe.config
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\Interop.WUApiLib.dll
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.csproj.ResolveComReference.cache
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\MSB Windows Update Management.exe.manifest
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\MSB Windows Update Management.application
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\MSB Windows Update Management.exe
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\MSB Windows Update Management.pdb
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\Interop.WUApiLib.dll
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.csprojResolveAssemblyReference.cache
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB_Windows_Update_Management.ProjectInstaller.resources
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.csproj.GenerateResource.Cache
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.exe.manifest
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.application
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.exe
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.pdb
+\\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\MSB Windows Update Management.exe.config
+\\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\MSB Windows Update Management.exe.manifest
+\\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\MSB Windows Update Management.application
+\\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\MSB Windows Update Management.exe
+\\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\MSB Windows Update Management.pdb
