@@ -3,7 +3,7 @@
 A simple Windows Service for cataloging, managing and installing 
 windows updates.
 
-## More Information
+## What Does It Do?
 The service runs several timers that periodically execute processes on the local server. 
 The main timer has the server check for available Windows Updates. Any available updates are automatically downloaded -- but not installed.
 These updates are cataloged and can be viewed in the IT Dashboard. 
@@ -16,9 +16,15 @@ Updates will not be installed unless they are approved via the Dashboard.
 ![Mark Updates Approved](https://github.com/Gimcrack/msb-windows-update-management/raw/master/images/MarkApproved.png "Mark Approved")
 
 ### Installing Updates
-Updates are never installed without express technician instruction, but only when a Server's status is set to 'Ready For Updates'.
+The Service will never install updates without express technician instruction, but only when a Server's status is set to 'Ready For Updates'.
 
 ![Install Updates](https://github.com/Gimcrack/msb-windows-update-management/raw/master/images/InstallUpdates.png "Install Updates")
+
+### Rebooting
+After updates are finished installing, the Service will determine if the server needs a reboot and update the status in the Dashboard. 
+The Service will not reboot the server on its own, but will wait until a technician sets the Server's status to 'Ready For Reboot'.
+
+![Reboot Ready](https://github.com/Gimcrack/msb-windows-update-management/raw/master/images/RebootRequired.png "Reboot Ready")
 
 ## Installation
 
