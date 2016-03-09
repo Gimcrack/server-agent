@@ -26,7 +26,14 @@ The Service will not reboot the server on its own, but will wait until a technic
 
 ![Reboot Ready](https://github.com/Gimcrack/msb-windows-update-management/raw/master/images/RebootRequired.png "Reboot Ready")
 
-## Installation
+### What If There Are More Updates?
+As soon as the server boots, the Service will start looking for updates again. New Updates can be approved on the Approve Updates page.
+Continue this cycle until all the available updates are installed.
+
+![Moar Updates](https://github.com/Gimcrack/msb-windows-update-management/raw/master/images/LookUpdates.png "Moar Updates")
+
+
+## Service Installation
 
 Installation is performed using the [.NET InstallUtil.exe Installer Tool](https://msdn.microsoft.com/en-us/library/50614e95%28v=vs.110%29.aspx "Help Online")
 
