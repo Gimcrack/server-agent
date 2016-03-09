@@ -6,7 +6,6 @@ B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Upda
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\MSB Windows Update Management.exe
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\MSB Windows Update Management.pdb
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Publish\Interop.WUApiLib.dll
-B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.csprojResolveAssemblyReference.cache
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB_Windows_Update_Management.ProjectInstaller.resources
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.csproj.GenerateResource.Cache
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.exe.manifest

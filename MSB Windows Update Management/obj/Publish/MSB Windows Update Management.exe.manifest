@@ -49,19 +49,19 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>aAdNqbuiB6qD1F34yk4KNO2WKz9051rXiNHWIUXOQ3M=</dsig:DigestValue>
+        <dsig:DigestValue>KY5bdl0klF0Y477cYsXevLSZjKegjekQ3zZHaUKsjqA=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MSB Windows Update Management.exe" size="23040">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MSB Windows Update Management.exe" size="23552">
       <assemblyIdentity name="MSB Windows Update Management" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>dnMIYnpvCvJYWc5Zij55C2rGU179cmD59Z2J9CciKSc=</dsig:DigestValue>
+        <dsig:DigestValue>JosP+suF1iiWrnWs1VcmcW1AQLZquKxl6l9LlXuaeEs=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
