@@ -6,9 +6,12 @@ windows updates.
 ## More Information
 The service runs several timers that periodically execute processes on the local server. 
 The main timer has the server check for available Windows Updates. Any available updates are automatically downloaded -- but not installed.
-These updates are cataloged and can be viewed in the IT Dashboard.
+These updates are cataloged and can be viewed in the IT Dashboard. 
+
+Updates will not be installed unless they are approved via the Dashboard. 
 
 ![Approve Updates](https://github.com/Gimcrack/msb-windows-update-management/raw/master/images/ApproveUpdates.png "Approve Updates")
+![Mark Updates Approved](https://github.com/Gimcrack/msb-windows-update-management/raw/master/images/MarkApproved.png "Mark Approved")
 
 ## Installation
 
