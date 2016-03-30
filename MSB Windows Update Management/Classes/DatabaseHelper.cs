@@ -21,24 +21,24 @@ namespace MSB_Windows_Update_Management
         public string queryGetServerStatus;
         public string queryUpdateApproved;
         public string queryUpdateHidden;
+        public string queryGetEmailNotifications;
+        public string queryGetTextNotifications;
+        public string queryGetExemptServices;
+        public string queryGetLastInstallBatch;
 
         public string insertUpdate;
         public string insertUpdateForServer;
         public string insertServer;
+        public string insertUpdateBatch;
         public string updateServer;
         public string updateUpdateForServer;
         public string setServerStatus;
-
-        private System.Diagnostics.EventLog eventLog1;
-        
+        public string setServerAlert;
+        public string setServerSoftwareVersion;
+        public string setUpdateInstalledAt;        
 
         public DatabaseHelper()
         {
-            // set up the event log
-            eventLog1 = new System.Diagnostics.EventLog();
-            eventLog1.Source = "Updates";
-            eventLog1.Log = "MSB";
-            
             connectionString = "Server=msbsqlrpt;Database=ITDashboard;User Id=ITDashboardUser;Password=ITDashboardUser;";
 
             countUpdates = "SELECT count(*) as count FROM [dbo].[updates] WHERE title = @title";
@@ -52,6 +52,8 @@ namespace MSB_Windows_Update_Management
             "WHERE u.title = @title " +
             "AND s.name = @hostname";
 
+            queryGetLastInstallBatch = "SELECT isnull(max(install_batch),0) as install_batch FROM update_details WHERE server_id=@server_id";
+
             queryGetUpdateId = "SELECT id FROM dbo.updates WHERE title = @title";
 
             queryGetServerId = "SELECT id FROM dbo.servers WHERE name = @hostname";
@@ -61,6 +63,12 @@ namespace MSB_Windows_Update_Management
             queryUpdateApproved = "SELECT count(id) as count FROM dbo.update_details WHERE installed_flag=0 AND approved_flag=1 AND server_id=@server_id AND update_id=@update_id";
 
             queryUpdateHidden = "SELECT count(id) as count FROM dbo.update_details WHERE hidden_flag=1 AND server_id=@server_id AND update_id=@update_id";
+
+            queryGetEmailNotifications = "SELECT email FROM dbo.notifications WHERE notifications_enabled in ('Both','Email')";
+
+            queryGetTextNotifications = "SELECT phone_number FROM dbo.notifications WHERE notifications_enabled in ('Both','Text')";
+
+            queryGetExemptServices = "SELECT name FROM dbo.notification_exemptions WHERE server_name in (@hostname,'All')";
 
             insertUpdate = "INSERT INTO [dbo].[updates] (title, description, kb_article, created_at, updated_at) VALUES (@title, @description, @kb_article, CAST(SYSDATETIME() AS VARCHAR(19)), CAST(SYSDATETIME() AS VARCHAR(19)))";
 
@@ -80,6 +88,8 @@ namespace MSB_Windows_Update_Management
 
             insertServer = "INSERT INTO dbo.servers (name, ip, operating_system_id, created_at, updated_at) VALUES (@hostname, @ip, 1, CAST(SYSDATETIME() AS VARCHAR(19)), CAST(SYSDATETIME() AS VARCHAR(19)))";
 
+            insertUpdateBatch = "INSERT INTO dbo.update_batches (server_id, batch_id, result, created_at, updated_at) VALUES (@server_id, @batch_id, @result, CAST(SYSDATETIME() AS VARCHAR(19)), CAST(SYSDATETIME() AS VARCHAR(19)))";
+            
             updateServer = "UPDATE dbo.servers SET " +
                 "last_windows_update = @last_windows_update, " +
                 "updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) " +
@@ -95,6 +105,12 @@ namespace MSB_Windows_Update_Management
                 "WHERE server_id = @server_id AND update_id = @update_id";
 
             setServerStatus = "UPDATE dbo.servers SET status=@status, updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) WHERE name = @hostname";
+
+            setServerAlert = "UPDATE dbo.servers SET alert=@alert, updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) WHERE name = @hostname";
+
+            setServerSoftwareVersion = "UPDATE dbo.servers SET software_version=@version, updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) WHERE name = @hostname";
+
+            setUpdateInstalledAt = "UPDATE update_details SET install_batch=@install_batch, installed_at = CAST(SYSDATETIME() AS VARCHAR(19)) WHERE server_id = @server_id AND update_id = @update_id";
 
         }
 
@@ -118,7 +134,7 @@ namespace MSB_Windows_Update_Management
 
                 catch (SqlException e)
                 {
-                    eventLog1.WriteEntry(e.Message, EventLogEntryType.Error);
+                    Program.Events.WriteEntry(e.Message, EventLogEntryType.Error);
                 }
 
                 finally
@@ -149,6 +165,13 @@ namespace MSB_Windows_Update_Management
                         DataTable dt = new DataTable();
                         dt.Load(reader);
                         return dt;
+                    }
+
+                    catch (SqlException e)
+                    {
+                        Program.Events.WriteEntry(e.Message, EventLogEntryType.Error);
+                        reader.Close();
+                        return new DataTable();
                     }
 
                     finally

@@ -42,6 +42,11 @@
     </dependentAssembly>
   </dependency>
   <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="System.Net.Http.Formatting" version="4.0.0.0" publicKeyToken="31BF3856AD364E35" language="neutral" processorArchitecture="msil" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Interop.WUApiLib.dll" size="73728">
       <assemblyIdentity name="Interop.WUApiLib" version="2.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
@@ -49,29 +54,41 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>uzrHNFDA2rPVcKe2G4r7jWsl+NJs0ODHF8WBsX7rh/8=</dsig:DigestValue>
+        <dsig:DigestValue>B0XBg4mLRrJJ/INIengRxGojSVWvqdIiHmuXkAE63aY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MSB Windows Update Management.exe" size="24576">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MSB Windows Update Management.exe" size="37888">
       <assemblyIdentity name="MSB Windows Update Management" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>XGmIzm5rHIIm6DFHpI6++BqLJvsoGpqBSAVjiISG8LY=</dsig:DigestValue>
+        <dsig:DigestValue>YXX7zrqYfYq8hdNQze3Zjbz9JCGrW9ZA4cK6CB1Wva4=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="MSB Windows Update Management.exe.config" size="437">
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Newtonsoft.Json.dll" size="407776">
+      <assemblyIdentity name="Newtonsoft.Json" version="4.5.0.0" publicKeyToken="30AD4FE6B2A6AEED" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>l3mYrsSGOV6rps5WYWSEJaGhgc4Ywsh8YoivYrh9Xso=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <file name="MSB Windows Update Management.exe.config" size="1261">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>XpLxOxUbi+JVTeZe+kXEmlxgHeQoFrm40w5RiTt6VBM=</dsig:DigestValue>
+      <dsig:DigestValue>zc/lK/qsjeSPJqd5ccLF+O+G0XnGtJ5iBmKZ/hw3/C8=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

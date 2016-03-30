@@ -17,3 +17,4 @@ B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Upda
 \\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\MSB Windows Update Management.application
 \\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\MSB Windows Update Management.exe
 \\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\MSB Windows Update Management.pdb
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Publish\MSB Windows Update Management.csprojResolveAssemblyReference.cache

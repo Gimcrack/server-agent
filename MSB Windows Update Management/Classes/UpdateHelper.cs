@@ -7,16 +7,13 @@ using System.Threading.Tasks;
 using WUApiLib;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-
+using System.IO;
+using System.Net.Mail;
 
 namespace MSB_Windows_Update_Management
 {
     public partial class UpdateHelper
     {
-        public DatabaseHelper db = new DatabaseHelper();
-        public DashboardHelper dashb = new DashboardHelper();
-        private System.Diagnostics.EventLog eventLog1;
-
         public ISystemInformation uSysInfo = new SystemInformation();
         public UpdateSession uSession = new UpdateSession();
         public IUpdateSearcher uSearcher;
@@ -30,15 +27,17 @@ namespace MSB_Windows_Update_Management
 
         public UpdateHelper()
         {
-            // set up the event log
-            eventLog1 = new System.Diagnostics.EventLog();
-            eventLog1.Source = "Updates";
-            eventLog1.Log = "MSB";
         }
 
         public void LookForUpdates()
         {
-            ShouldInstallUpdates = (dashb.GetServerStatus() == "Ready For Updates");
+            // make sure the server is supposed to get updates
+            if ( File.Exists(@"c:\scripts\MSBUpdateManager\_no_updates.txt"))
+            {
+                return;
+            }
+            
+            ShouldInstallUpdates = (Program.Dash.GetServerStatus() == "Ready For Updates");
 
             uDownloadList = new UpdateCollection();
             uInstallList = new UpdateCollection();
@@ -46,12 +45,12 @@ namespace MSB_Windows_Update_Management
             List<String> updateList = new List<string>();
 
 
-            dashb.status("Looking For Available Updates...");
+            Program.Dash.status("Looking For Available Updates...");
 
             uSearcher.Online = true;
             uResult = uSearcher.Search("IsInstalled=0 and Type='Software'");
 
-            dashb.status("There are " + uResult.Updates.Count + " available updates");
+            Program.Dash.status("There are " + uResult.Updates.Count + " available updates");
 
 
             updateList.Add("Available Updates...");
@@ -70,35 +69,41 @@ namespace MSB_Windows_Update_Management
             this.updateUpdates();
 
             // update server info
-            dashb.UpdateServerInfo();
+            Program.Dash.UpdateServerInfo();
 
-            eventLog1.WriteEntry(string.Join(System.Environment.NewLine, updateList), EventLogEntryType.Information);
+            Program.Events.WriteEntry(string.Join(System.Environment.NewLine, updateList), EventLogEntryType.Information);
             Console.WriteLine(string.Join(System.Environment.NewLine, updateList));
 
+            this.SetServerStatusNominal();
+
+        }
+
+
+        public void SetServerStatusNominal()
+        {
             if (uSysInfo.RebootRequired)
             {
-                dashb.status("Reboot Required");
+                Program.Dash.status("Reboot Required");
             }
             else
             {
-                dashb.status("Idle");
+                Program.Dash.status("Idle");
             }
-
         }
 
         private void processUpdate(IUpdate update, List<String> updateList, UpdateCollection uDownloadList, UpdateCollection uInstallList)
         {
 
-            dashb.storeUpdateInDashboard(update);
+            Program.Dash.storeUpdateInDashboard(update);
 
-            dashb.updateUpdateInDashboardForThisServer(update);
+            Program.Dash.updateUpdateInDashboardForThisServer(update);
 
             if (!update.IsDownloaded)
             {
                 uDownloadList.Add(update);
             }
 
-            if (dashb.isUpdateApproved(update))
+            if (Program.Dash.isUpdateApproved(update))
             {
                 uInstallList.Add(update);
             }
@@ -110,7 +115,7 @@ namespace MSB_Windows_Update_Management
         {
             try
             {
-                dashb.status("Downloading " + updateList.Count + " Updates");
+                Program.Dash.status("Downloading " + updateList.Count + " Updates");
                 uDownloader = uSession.CreateUpdateDownloader();
                 uDownloader.Updates = updateList;
                 uDownloader.Download();
@@ -118,14 +123,14 @@ namespace MSB_Windows_Update_Management
 
             catch (COMException e)
             {
-                eventLog1.WriteEntry(e.Message, EventLogEntryType.Error);
+                Program.Events.WriteEntry(e.Message, EventLogEntryType.Error);
             }
         }
 
         private void updateUpdates()
         {
             // TODO: Insert monitoring activities here.
-            dashb.status("Updating updates...");
+            Program.Dash.status("Updating updates...");
 
             uSearcher = uSession.CreateUpdateSearcher();
             uSearcher.Online = true;
@@ -133,13 +138,13 @@ namespace MSB_Windows_Update_Management
 
             foreach (IUpdate update in uResult.Updates)
             {
-                update.IsHidden = dashb.isUpdateHidden(update);
+                update.IsHidden = Program.Dash.isUpdateHidden(update);
 
-                if (dashb.isUpdateInDashboardForThisServer(update))
+                if (Program.Dash.isUpdateInDashboardForThisServer(update))
                 {
-                    eventLog1.WriteEntry("Updating update in the dashboard for server: " + Environment.MachineName + ", update : " + update.Title, EventLogEntryType.Information);
+                    Program.Events.WriteEntry("Updating update in the dashboard for server: " + Environment.MachineName + ", update : " + update.Title, EventLogEntryType.Information);
                     Console.WriteLine("Updating update in the dashboard for server: " + Environment.MachineName + ", update : " + update.Title);
-                    dashb.updateUpdateInDashboardForThisServer(update);
+                    Program.Dash.updateUpdateInDashboardForThisServer(update);
                 }
             }
         }
@@ -158,46 +163,115 @@ namespace MSB_Windows_Update_Management
             return result;
         }
 
-        
-
         private void installUpdates(UpdateCollection updateList)
         {
+            uInstaller = uSession.CreateUpdateInstaller();
+            uInstaller.AllowSourcePrompts = false;
 
-
-            if ((updateList.Count > 0) && ShouldInstallUpdates)
+            if ( ! ShouldInstallUpdates || updateList.Count < 1 )
             {
-                dashb.status("Installing Updates...");
-
-                try
-                {
-                    dashb.status("Installing " + updateList.Count + " Updates");
-                    uInstaller = uSession.CreateUpdateInstaller();
-                    uInstaller.AllowSourcePrompts = false;
-                    if (uInstaller.IsBusy)
-                    {
-                        dashb.status("Update Installer Busy, Try Again");
-                        return;
-                    }
-
-                    if (uInstaller.RebootRequiredBeforeInstallation)
-                    {
-                        dashb.status("Reboot Required");
-                        return;
-                    }
-
-                    uInstaller.Updates = updateList;
-                    uInstaller.Install();
-
-                }
-                catch (Exception e)
-                {
-                    eventLog1.WriteEntry(e.Message, EventLogEntryType.Error);
-                }
+                return;
             }
+
+            if (uInstaller.IsBusy)
+            {
+                Program.Dash.status("Update Installer Busy, Try Again");
+                return;
+            }
+
+            if (uInstaller.RebootRequiredBeforeInstallation)
+            {
+                Program.Dash.status("Reboot Required");
+                return;
+            }
+
+            Program.Dash.status("Installing " + updateList.Count + " Updates");
+     
+            int counter = 0;
+            int installBatch = Program.Dash.getLastInstallBatch() + 1;
+            List<string> results = new List<string>();
+
+            foreach( IUpdate update in updateList )
+            {
+                counter++;
+                string resultText;
+
+                Program.Dash.status(string.Format("Installing update {0} of {1} : {2}", counter.ToString(), updateList.Count.ToString(), update.Title));
+                resultText = this.install(update, installBatch);
+                results.Add( string.Format("Result for '{0}' : {1}",update.Title,resultText) );
+            }
+
+            // send the result notification
+            string resultMessage = this.getResultMessage(results);
+            Program.Dash.status(resultMessage);
+            Program.Dash.InsertUpdateBatch(resultMessage, installBatch);
         }
 
-        
+        private string install(IUpdate update, int installBatch)
+        {
+            string resultText;
 
-        
+            try
+            {
+                UpdateCollection updates = new UpdateCollection();
+                updates.Add(update);
+                uInstaller = uSession.CreateUpdateInstaller();
+                uInstaller.Updates = updates;
+                IInstallationResult result = uInstaller.Install();
+                IUpdateInstallationResult upd_result = result.GetUpdateResult(0);
+                resultText = this.getResultText(upd_result);
+                Program.Dash.setUpdateInstalledAt(update, installBatch);
+            }
+
+            catch (Exception e)
+            {
+                resultText = string.Format("There was a problem installing update '{0}' : {1}", update.Title, e.Message);
+                Program.Events.WriteEntry(string.Format("There was a problem installing update '{0}' : {1}", update.Title, e.Message), EventLogEntryType.Error);
+            }
+
+            return resultText;
+        }
+
+        private string getResultText( IUpdateInstallationResult upd_result )
+        {
+            OperationResultCode resultCode = upd_result.ResultCode;
+
+            switch( (int) resultCode )
+            {
+                case 0 :
+                    return "Operation Not Started";
+
+                case 1 :
+                    return "Operation In Progress";
+
+                case 2 :
+                    return "Operation Successful";
+
+                case 3 :
+                    return "Operation Completed with Errors";
+
+                case 4 :
+                    return "Operation Failed";
+
+                case 5 :
+                    return "Operation Aborted";
+            }
+
+            return "Nonstandard result code";
+        }
+
+        private string getResultMessage(List<string> results)
+        {
+            string message = string.Empty;
+
+            message = "Windows Update Installation Report On " + Environment.MachineName + Environment.NewLine;
+
+            foreach (string result in results)
+            {
+                message += result + Environment.NewLine;
+            }
+
+            return message;
+        }
     }
 }

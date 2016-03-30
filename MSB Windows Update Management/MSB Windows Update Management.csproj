@@ -77,9 +77,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -90,6 +96,10 @@
   <ItemGroup>
     <Compile Include="Classes\DashboardHelper.cs" />
     <Compile Include="Classes\DatabaseHelper.cs" />
+    <Compile Include="Classes\MailHelper.cs" />
+    <Compile Include="Classes\MessageHelper.cs" />
+    <Compile Include="Classes\ServiceControllerEx.cs" />
+    <Compile Include="Classes\ServiceHelper.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -22,7 +22,7 @@ namespace MSB_Windows_Update_Management
     public partial class MSBWindowsUpdateManagement : ServiceBase
     {
         /// <summary>
-        /// MSB IT Windows Update Management Service
+        /// MSB IT Windows Update Management Service v1.2.1
         /// 
         /// Automatically: 
         ///  -- Checks for updates every 8 hours
@@ -30,50 +30,34 @@ namespace MSB_Windows_Update_Management
         ///  -- Logs all available updates to the IT Dashboard database
         ///  -- Installs approved updates on designated servers
         ///  -- Reboots designated servers at the designated time
+        ///  -- Monitors essential server services and reports when a service goes offline
         ///  
         /// To Do:
-        ///  -- Add service monitoring
+        ///  -- Custom service whitelist per server
+        ///  -- Target server notifications to specific people
+        ///  
         /// </summary>
         public MSBWindowsUpdateManagement()
         {
             InitializeComponent();
-            SetupEventLog();
 
             // The service executable can also be run
             //  as a console application
             if (Environment.UserInteractive)
             {
-                upd.LookForUpdates();
+                //string message = "Windows Update Installation Report On TRIM7 Result for 'Update for Windows Server 2008 R2 x64 Edition (KB3135445)' : Operation Successful";
+
+                //mail.updateReport(message);
+                //upd.LookForUpdates();
             }
         }
-        
+
         /// <summary>
-        /// Most Windows Update functions are handled
-        ///  by the UpdateHelper class
+        /// The software version of this Windows Service
         /// </summary>
-        public UpdateHelper upd = new UpdateHelper();
-                
-        /// <summary>
-        /// The service logs everything to a custom event log
-        ///  Log = MSB, Source = Updates
-        /// </summary>
-        private System.Diagnostics.EventLog eventLog1;
-        private void SetupEventLog()
-        {
-            if (!System.Diagnostics.EventLog.SourceExists("Updates"))
-            {
-                System.Diagnostics.EventLog.CreateEventSource(
-                    "Updates", "MSB");
-            }
-            eventLog1 = new System.Diagnostics.EventLog();
-            eventLog1.Source = "Updates";
-            eventLog1.Log = "MSB";
-        }
+        public string SoftwareVersion = "1.2.8.1";
 
         private System.ComponentModel.IContainer components = null;
-
-        
-
         
         /// <summary>
         /// This method automatically fires whenever the
@@ -82,7 +66,7 @@ namespace MSB_Windows_Update_Management
         /// <param name="args"></param>
         protected override void OnStart(string[] args)
         {
-            eventLog1.WriteEntry("Started Service MSB Windows Update Management");
+            Program.Events.WriteEntry("Started Service MSB Windows Update Management");
             this.SetupTimers();
             
             
@@ -96,6 +80,9 @@ namespace MSB_Windows_Update_Management
             // Update the service state to Running.
             serviceStatus.dwCurrentState = ServiceState.SERVICE_RUNNING;
             SetServiceStatus(this.ServiceHandle, ref serviceStatus);
+
+            // Set the software version
+            Program.Dash.SetServerSoftwareVersion(this.SoftwareVersion);
 
         }
 
@@ -119,6 +106,7 @@ namespace MSB_Windows_Update_Management
         public System.Timers.Timer lookForUpdatesTimer = new System.Timers.Timer();
         public System.Timers.Timer updateServerInfoTimer = new System.Timers.Timer();
         public System.Timers.Timer getServerStatusTimer = new System.Timers.Timer();
+        public System.Timers.Timer rebootComputerTimer = new System.Timers.Timer();
         private void SetupTimers()
         {
             // Check for available updates timer    
@@ -127,7 +115,7 @@ namespace MSB_Windows_Update_Management
             lookForUpdatesTimer.Start();
 
             // Update Server Info timer    
-            updateServerInfoTimer.Interval = 5000; 
+            updateServerInfoTimer.Interval = 5*1000*60; 
             updateServerInfoTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.OnUpdateServerInfoTimer);
             updateServerInfoTimer.Start();
 
@@ -146,19 +134,21 @@ namespace MSB_Windows_Update_Management
         public void OnLookForUpdatesTimer(object sender, System.Timers.ElapsedEventArgs args)
         {
             lookForUpdatesTimer.Interval = 1000 * 60 * 60 * 8; // 8 hours
-            upd.LookForUpdates();    
+            Program.Upd.LookForUpdates();    
         }
 
         /// <summary>
         /// On Update Server Info
         /// -- instructs the service to update server info
+        /// -- check to make sure all necessary services are running
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
         public void OnUpdateServerInfoTimer(object sender, System.Timers.ElapsedEventArgs args)
         {
-            updateServerInfoTimer.Interval = 1000 * 60 * 10; // 10 min
-            upd.dashb.UpdateServerInfo();
+            updateServerInfoTimer.Interval = 1000 * 60 * 6; // 6 min
+            Program.Dash.UpdateServerInfo();
+            Program.Serv.CheckServices();
         }
 
         /// <summary>
@@ -169,19 +159,70 @@ namespace MSB_Windows_Update_Management
         /// <param name="args"></param>
         public void OnGetServerStatusTimer(object sender, System.Timers.ElapsedEventArgs args)
         {
-            getServerStatusTimer.Interval = 1000 * 60 * 2; // 2 mins
+            getServerStatusTimer.Interval = 1000 * 10 * 1; // 10 sec
             
-            switch ( upd.dashb.GetServerStatus() )
+            switch ( Program.Dash.GetServerStatus() )
             {
                 case "Ready For Updates" :
                 case "Look For Updates" :
-                    upd.LookForUpdates();
+                    Program.Upd.LookForUpdates();
                     break;
 
                 case "Ready For Reboot" :
-                    upd.dashb.RebootComputer();
+                    this.RebootComputer();
+                    break;
+
+                case "Update Software" :
+                    this.UpdateAgentSoftware();
+                    break;
+
+                case "Abort Reboot" :
+                case "Abort Shutdown" :
+                    this.AbortShutdown();
                     break;
             }    
+        }
+
+
+        /// <summary>
+        /// Update Agent Software
+        /// -- launches the deploy script
+        /// </summary>
+        private void UpdateAgentSoftware()
+        {
+            Program.Dash.status("Updating Agent Software...");
+            Process.Start(@"\\dsjkb\desoft$\MSBWindowsUpdateManagementSvc\deploy.bat");
+        }
+
+        /// <summary>
+        /// Reboot The Computer
+        /// -- reboot the computer in 2 minutes
+        /// </summary>
+        public int rebootCountdown = -1;
+
+        public void RebootComputer()
+        {
+            rebootCountdown = 120;
+            Program.Dash.status( string.Format("Rebooting in {0}s",rebootCountdown.ToString()));
+            Process.Start("shutdown.exe", "-r -t 120 -c \"2min to reboot 'shutdown -a' aborts.\"");
+
+            rebootComputerTimer.Interval = 15000;
+            rebootComputerTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.OnRebootComputerTimer);
+            rebootComputerTimer.Start();
+        }
+
+        public void OnRebootComputerTimer(object sender, System.Timers.ElapsedEventArgs args)
+        {
+            rebootCountdown -= 15;
+            Program.Dash.status( string.Format("Rebooting in {0}s",rebootCountdown.ToString()));
+        }
+
+        public void AbortShutdown()
+        {
+            rebootComputerTimer.Stop();
+            rebootCountdown = -1;
+            Program.Dash.status("Shutdown Aborted");
+            Process.Start("shutdown.exe", "-a");
         }
 
 

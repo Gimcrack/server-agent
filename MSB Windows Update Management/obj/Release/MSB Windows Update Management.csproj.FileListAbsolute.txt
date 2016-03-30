@@ -13,3 +13,4 @@ B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Upda
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Release\MSB Windows Update Management.exe
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Release\MSB Windows Update Management.pdb
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Release\MSB Windows Update Management.csprojResolveAssemblyReference.cache
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Release\Newtonsoft.Json.dll

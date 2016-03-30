@@ -16,17 +16,12 @@ namespace MSB_Windows_Update_Management
 {
     public partial class DashboardHelper
     {
-        public DatabaseHelper db = new DatabaseHelper();
-        private System.Diagnostics.EventLog eventLog1;
         public AutomaticUpdatesClass uAutomaticUpdate = new AutomaticUpdatesClass();
 
 
         public DashboardHelper()
         {
-            // set up the event log
-            eventLog1 = new System.Diagnostics.EventLog();
-            eventLog1.Source = "Updates";
-            eventLog1.Log = "MSB";
+
         }
 
         public void UpdateServerInfo()
@@ -46,40 +41,70 @@ namespace MSB_Windows_Update_Management
 
         public void status(string message, EventLogEntryType type = EventLogEntryType.Information)
         {
-            eventLog1.WriteEntry(message, type);
+            Program.Events.WriteEntry(message, type);
             Console.WriteLine(message);
             this.SetServerStatus(message);
         }
 
         public void storeServerInDashboard()
         {
-            SqlCommand command = new SqlCommand(db.insertServer);
+            SqlCommand command = new SqlCommand(Program.DB.insertServer);
             command.Parameters.AddWithValue("@hostname", Environment.MachineName);
             command.Parameters.AddWithValue("@ip", this.GetIPAddress());
-            db.executeNonQuery(command);
+            Program.DB.executeNonQuery(command);
+        }
+
+        public void InsertUpdateBatch(string result, int batch_id)
+        {
+            SqlCommand command = new SqlCommand(Program.DB.insertUpdateBatch);
+            command.Parameters.AddWithValue("@server_id", this.getServerId());
+            command.Parameters.AddWithValue("@batch_id", batch_id);
+            command.Parameters.AddWithValue("@result", result);
+            Program.DB.executeNonQuery(command);
         }
 
         public void SetServerStatus(string status)
         {
-            SqlCommand command = new SqlCommand(db.setServerStatus);
+            SqlCommand command = new SqlCommand(Program.DB.setServerStatus);
             command.Parameters.AddWithValue("@status", status);
             command.Parameters.AddWithValue("@hostname", Environment.MachineName);
-            db.executeNonQuery(command);
+            Program.DB.executeNonQuery(command);
+        }
+
+        public void SetServerSoftwareVersion(string version)
+        {
+            SqlCommand command = new SqlCommand(Program.DB.setServerSoftwareVersion);
+            command.Parameters.AddWithValue("@version", version);
+            command.Parameters.AddWithValue("@hostname", Environment.MachineName);
+            Program.DB.executeNonQuery(command);
+        }
+
+        public void SetServerAlert(string message)
+        {
+            SqlCommand command = new SqlCommand(Program.DB.setServerAlert);
+            command.Parameters.AddWithValue("@alert", message);
+            command.Parameters.AddWithValue("@hostname", Environment.MachineName);
+            Program.DB.executeNonQuery(command);
+        }
+
+        public void ClearServerAlert()
+        {
+            this.SetServerAlert(string.Empty);
         }
 
         public void SetServerLastWindowsUpdate(DateTime? lastUpdateSuccess)
         {
-            SqlCommand command = new SqlCommand(db.updateServer);
+            SqlCommand command = new SqlCommand(Program.DB.updateServer);
             command.Parameters.AddWithValue("@hostname", Environment.MachineName);
             command.Parameters.AddWithValue("@last_windows_update", lastUpdateSuccess);
-            db.executeNonQuery(command);
+            Program.DB.executeNonQuery(command);
         }
 
         public string GetServerStatus()
         {
-            SqlCommand command = new SqlCommand(db.queryGetServerStatus);
+            SqlCommand command = new SqlCommand(Program.DB.queryGetServerStatus);
             command.Parameters.AddWithValue("@hostname", Environment.MachineName);
-            DataTable rows = db.executeQuery(command);
+            DataTable rows = Program.DB.executeQuery(command);
 
             if (rows.Rows.Count < 1)
             {
@@ -89,6 +114,27 @@ namespace MSB_Windows_Update_Management
             DataRow row = rows.Rows[0];
 
             return row["status"].ToString();
+        }
+
+        public List<string> GetExemptServices()
+        {
+            List<string> svcs = new List<string>();
+            
+            SqlCommand command = new SqlCommand(Program.DB.queryGetExemptServices);
+            command.Parameters.AddWithValue("@hostname", Environment.MachineName);
+            DataTable rows = Program.DB.executeQuery(command);
+
+            if (rows.Rows.Count < 1)
+            {
+                return svcs;
+            }
+
+            foreach(DataRow row in rows.Rows)
+            {
+                svcs.Add(row["name"].ToString());
+            }
+
+            return svcs;
         }
 
 
@@ -126,9 +172,9 @@ namespace MSB_Windows_Update_Management
         public int getServerId()
         {
             int id;
-            SqlCommand command = new SqlCommand(db.queryGetServerId);
+            SqlCommand command = new SqlCommand(Program.DB.queryGetServerId);
             command.Parameters.AddWithValue("@hostname", Environment.MachineName);
-            DataTable rows = db.executeQuery(command);
+            DataTable rows = Program.DB.executeQuery(command);
 
             if (rows.Rows.Count < 1)
             {
@@ -146,9 +192,9 @@ namespace MSB_Windows_Update_Management
         public int getUpdateId(IUpdate update)
         {
             int id;
-            SqlCommand command = new SqlCommand(db.queryGetUpdateId);
+            SqlCommand command = new SqlCommand(Program.DB.queryGetUpdateId);
             command.Parameters.AddWithValue("@title", update.Title);
-            DataTable rows = db.executeQuery(command);
+            DataTable rows = Program.DB.executeQuery(command);
 
             if (rows.Rows.Count < 1)
             {
@@ -166,13 +212,22 @@ namespace MSB_Windows_Update_Management
         {
             if (!this.isUpdateInDashboard(update))
             {
-                SqlCommand command = new SqlCommand(db.insertUpdate);
+                SqlCommand command = new SqlCommand(Program.DB.insertUpdate);
                 command.Parameters.AddWithValue("@title", update.Title);
                 command.Parameters.AddWithValue("@description", update.Title);
                 command.Parameters.AddWithValue("@kb_article", this.getKBArticle(update.Title));
 
-                db.executeNonQuery(command);
+                Program.DB.executeNonQuery(command);
             }
+        }
+
+        public void setUpdateInstalledAt(IUpdate update, int install_batch)
+        {
+            SqlCommand command = new SqlCommand(Program.DB.setUpdateInstalledAt);
+            command.Parameters.AddWithValue("@install_batch", install_batch);
+            command.Parameters.AddWithValue("@update_id", this.getUpdateId(update));
+            command.Parameters.AddWithValue("@server_id", this.getServerId());
+            Program.DB.executeNonQuery(command);
         }
 
         public dynamic storeUpdateInDashboardForThisServer(IUpdate update)
@@ -198,7 +253,7 @@ namespace MSB_Windows_Update_Management
                 return this.storeUpdateInDashboardForThisServer(update);
             }
 
-            SqlCommand command = new SqlCommand(db.insertUpdateForServer);
+            SqlCommand command = new SqlCommand(Program.DB.insertUpdateForServer);
             command.Parameters.AddWithValue("@update_id", update_id);
             command.Parameters.AddWithValue("@server_id", server_id);
             command.Parameters.AddWithValue("@eula_accepted", update.EulaAccepted);
@@ -209,7 +264,7 @@ namespace MSB_Windows_Update_Management
             command.Parameters.AddWithValue("@max_download_size", update.MaxDownloadSize);
             command.Parameters.AddWithValue("@min_download_size", update.MinDownloadSize);
 
-            db.executeNonQuery(command);
+            Program.DB.executeNonQuery(command);
 
             return true;
         }
@@ -217,9 +272,9 @@ namespace MSB_Windows_Update_Management
         public bool isUpdateInDashboard(IUpdate update)
         {
             int count;
-            SqlCommand command = new SqlCommand(db.countUpdates);
+            SqlCommand command = new SqlCommand(Program.DB.countUpdates);
             command.Parameters.AddWithValue("@title", update.Title);
-            DataTable rows = db.executeQuery(command);
+            DataTable rows = Program.DB.executeQuery(command);
 
             DataRow row = rows.Rows[0];
 
@@ -229,13 +284,28 @@ namespace MSB_Windows_Update_Management
             return false;
         }
 
+        public int getLastInstallBatch()
+        {
+            int batch;                     
+
+            SqlCommand command = new SqlCommand(Program.DB.queryGetLastInstallBatch);
+            command.Parameters.AddWithValue("@server_id", this.getServerId());
+            DataTable rows = Program.DB.executeQuery(command);
+
+            DataRow row = rows.Rows[0];
+
+            Int32.TryParse(row["install_batch"].ToString(), out batch);
+
+            return (batch > 0) ? batch : 0;
+        }
+
         public bool isUpdateInDashboardForThisServer(IUpdate update)
         {
             int count;
-            SqlCommand command = new SqlCommand(db.countUpdatesForServer);
+            SqlCommand command = new SqlCommand(Program.DB.countUpdatesForServer);
             command.Parameters.AddWithValue("@title", update.Title);
             command.Parameters.AddWithValue("@hostname", Environment.MachineName);
-            DataTable rows = db.executeQuery(command);
+            DataTable rows = Program.DB.executeQuery(command);
 
             DataRow row = rows.Rows[0];
 
@@ -252,10 +322,10 @@ namespace MSB_Windows_Update_Management
             int update_id = this.getUpdateId(update);
             int server_id = this.getServerId();
 
-            SqlCommand command = new SqlCommand(db.queryUpdateApproved);
+            SqlCommand command = new SqlCommand(Program.DB.queryUpdateApproved);
             command.Parameters.AddWithValue("@update_id", update_id);
             command.Parameters.AddWithValue("@server_id", server_id);
-            DataTable rows = db.executeQuery(command);
+            DataTable rows = Program.DB.executeQuery(command);
 
             DataRow row = rows.Rows[0];
 
@@ -272,10 +342,10 @@ namespace MSB_Windows_Update_Management
             int update_id = this.getUpdateId(update);
             int server_id = this.getServerId();
 
-            SqlCommand command = new SqlCommand(db.queryUpdateHidden);
+            SqlCommand command = new SqlCommand(Program.DB.queryUpdateHidden);
             command.Parameters.AddWithValue("@update_id", update_id);
             command.Parameters.AddWithValue("@server_id", server_id);
-            DataTable rows = db.executeQuery(command);
+            DataTable rows = Program.DB.executeQuery(command);
 
             DataRow row = rows.Rows[0];
 
@@ -299,7 +369,7 @@ namespace MSB_Windows_Update_Management
             int server_id = this.getServerId();
 
 
-            SqlCommand command = new SqlCommand(db.updateUpdateForServer);
+            SqlCommand command = new SqlCommand(Program.DB.updateUpdateForServer);
             command.Parameters.AddWithValue("@update_id", update_id);
             command.Parameters.AddWithValue("@server_id", server_id);
             command.Parameters.AddWithValue("@eula_accepted", update.EulaAccepted);
@@ -310,15 +380,9 @@ namespace MSB_Windows_Update_Management
             command.Parameters.AddWithValue("@max_download_size", update.MaxDownloadSize);
             command.Parameters.AddWithValue("@min_download_size", update.MinDownloadSize);
 
-            db.executeNonQuery(command);
+            Program.DB.executeNonQuery(command);
 
             return true;
-        }
-
-        public void RebootComputer()
-        {
-            this.status("Rebooting in 5 min");
-            System.Diagnostics.Process.Start("shutdown.exe", "-r -t 300 -c \"Rebooting in 5. Run 'shutdown -a' to abort.\"");
         }
 
         public string getKBArticle(string title)

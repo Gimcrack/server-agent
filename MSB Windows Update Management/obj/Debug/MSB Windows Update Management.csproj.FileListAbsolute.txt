@@ -7,9 +7,9 @@ B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Upda
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Debug\MSB Windows Update Management.pdb
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Debug\Interop.WUApiLib.dll
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Debug\MSB Windows Update Management.csproj.ResolveComReference.cache
-B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Debug\MSB Windows Update Management.csprojResolveAssemblyReference.cache
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Debug\Interop.WUApiLib.dll
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Debug\MSB Windows Update Management.exe.manifest
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Debug\MSB Windows Update Management.application
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Debug\MSB Windows Update Management.exe.manifest
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Debug\MSB Windows Update Management.application
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Debug\Newtonsoft.Json.dll
