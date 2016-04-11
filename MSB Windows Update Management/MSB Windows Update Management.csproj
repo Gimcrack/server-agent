@@ -94,8 +94,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\AlertHelper.cs" />
     <Compile Include="Classes\DashboardHelper.cs" />
     <Compile Include="Classes\DatabaseHelper.cs" />
+    <Compile Include="Classes\DiskHelper.cs" />
     <Compile Include="Classes\MailHelper.cs" />
     <Compile Include="Classes\MessageHelper.cs" />
     <Compile Include="Classes\ServiceControllerEx.cs" />

@@ -10,6 +10,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using WUApiLib;
 
 namespace MSB_Windows_Update_Management
@@ -39,6 +40,13 @@ namespace MSB_Windows_Update_Management
 
         }
 
+        public void CheckIn()
+        {
+            SqlCommand command = new SqlCommand(Program.DB.checkIn);
+            command.Parameters.AddWithValue("@hostname", Environment.MachineName);
+            Program.DB.executeNonQuery(command);
+        }
+
         public void status(string message, EventLogEntryType type = EventLogEntryType.Information)
         {
             Program.Events.WriteEntry(message, type);
@@ -63,6 +71,14 @@ namespace MSB_Windows_Update_Management
             Program.DB.executeNonQuery(command);
         }
 
+        public void CleanupUpdates( List<int> update_ids )
+        {
+            string comm = string.Format( Program.DB.deleteSupersededUpdates, string.Join(",",update_ids) );
+            SqlCommand command = new SqlCommand(comm);
+            command.Parameters.AddWithValue("@server_id", this.getServerId());
+            Program.DB.executeNonQuery(command);
+        }
+
         public void SetServerStatus(string status)
         {
             SqlCommand command = new SqlCommand(Program.DB.setServerStatus);
@@ -77,19 +93,6 @@ namespace MSB_Windows_Update_Management
             command.Parameters.AddWithValue("@version", version);
             command.Parameters.AddWithValue("@hostname", Environment.MachineName);
             Program.DB.executeNonQuery(command);
-        }
-
-        public void SetServerAlert(string message)
-        {
-            SqlCommand command = new SqlCommand(Program.DB.setServerAlert);
-            command.Parameters.AddWithValue("@alert", message);
-            command.Parameters.AddWithValue("@hostname", Environment.MachineName);
-            Program.DB.executeNonQuery(command);
-        }
-
-        public void ClearServerAlert()
-        {
-            this.SetServerAlert(string.Empty);
         }
 
         public void SetServerLastWindowsUpdate(DateTime? lastUpdateSuccess)
@@ -119,22 +122,32 @@ namespace MSB_Windows_Update_Management
         public List<string> GetExemptServices()
         {
             List<string> svcs = new List<string>();
-            
-            SqlCommand command = new SqlCommand(Program.DB.queryGetExemptServices);
-            command.Parameters.AddWithValue("@hostname", Environment.MachineName);
-            DataTable rows = Program.DB.executeQuery(command);
 
-            if (rows.Rows.Count < 1)
+            try
+            {
+                SqlCommand command = new SqlCommand(Program.DB.queryGetExemptServices);
+                command.Parameters.AddWithValue("@hostname", Environment.MachineName);
+                DataTable rows = Program.DB.executeQuery(command);
+                
+                if (rows.Rows.Count < 1)
+                {
+                    return svcs;
+                }
+
+                foreach (DataRow row in rows.Rows)
+                {
+                    svcs.Add(row["name"].ToString());
+                }
+
+                return svcs;
+            }
+
+            catch 
             {
                 return svcs;
             }
 
-            foreach(DataRow row in rows.Rows)
-            {
-                svcs.Add(row["name"].ToString());
-            }
-
-            return svcs;
+            
         }
 
 
@@ -189,6 +202,28 @@ namespace MSB_Windows_Update_Management
             return 0;
         }
 
+        public int getServerDiskId(DriveInfo drive)
+        {
+            int id;
+            SqlCommand command = new SqlCommand(Program.DB.queryGetServerDiskId);
+            command.Parameters.AddWithValue("@server_id", getServerId());
+            command.Parameters.AddWithValue("@name", drive.Name);
+
+            DataTable rows = Program.DB.executeQuery(command);
+
+            if (rows.Rows.Count < 1)
+            {
+                return 0;
+            }
+
+            DataRow row = rows.Rows[0];
+
+            Int32.TryParse(row["id"].ToString(), out id);
+
+            if (id > 0) return id;
+            return 0;
+        }
+
         public int getUpdateId(IUpdate update)
         {
             int id;
@@ -208,6 +243,40 @@ namespace MSB_Windows_Update_Management
             return 0;
         }
 
+        public void storeServerDiskInDashboard(DriveInfo drive)
+        {
+            if ( DriveExistsInDashboard(drive) )
+            {
+                updateServerDiskInDashboard(drive);
+                return;
+            }
+
+            SqlCommand command = new SqlCommand(Program.DB.insertServerDisk);
+            command.Parameters.AddWithValue("@name", drive.Name);
+            command.Parameters.AddWithValue("@label", drive.VolumeLabel);
+            command.Parameters.AddWithValue("@server_id", getServerId() );
+            command.Parameters.AddWithValue("@size_gb", drive.TotalSize / 1073741824 );
+            command.Parameters.AddWithValue("@used_gb", ( drive.TotalSize - drive.TotalFreeSpace ) / 1073741824 );
+            command.Parameters.AddWithValue("@free_gb", ( drive.TotalFreeSpace ) / 1073741824 );
+            Program.DB.executeNonQuery(command);
+      
+        }
+
+        public void updateServerDiskInDashboard(DriveInfo drive)
+        {
+            int id = getServerDiskId(drive);
+
+            SqlCommand command = new SqlCommand(Program.DB.updateServerDisk);
+            command.Parameters.AddWithValue("@label", drive.VolumeLabel);
+            command.Parameters.AddWithValue("@server_id", getServerId());
+            command.Parameters.AddWithValue("@size_gb", drive.TotalSize / 1073741824);
+            command.Parameters.AddWithValue("@used_gb", (drive.TotalSize - drive.TotalFreeSpace) / 1073741824);
+            command.Parameters.AddWithValue("@free_gb", (drive.TotalFreeSpace) / 1073741824);
+            command.Parameters.AddWithValue("@id", id);
+
+            Program.DB.executeNonQuery(command);
+        }
+
         public void storeUpdateInDashboard(IUpdate update)
         {
             if (!this.isUpdateInDashboard(update))
@@ -219,6 +288,11 @@ namespace MSB_Windows_Update_Management
 
                 Program.DB.executeNonQuery(command);
             }
+        }
+
+        private bool DriveExistsInDashboard(DriveInfo drive)
+        {
+            return getServerDiskId(drive) > 0;
         }
 
         public void setUpdateInstalledAt(IUpdate update, int install_batch)

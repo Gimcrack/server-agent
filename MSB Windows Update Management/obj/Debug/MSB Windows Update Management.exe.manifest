@@ -59,14 +59,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MSB Windows Update Management.exe" size="37888">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MSB Windows Update Management.exe" size="44032">
       <assemblyIdentity name="MSB Windows Update Management" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>YXX7zrqYfYq8hdNQze3Zjbz9JCGrW9ZA4cK6CB1Wva4=</dsig:DigestValue>
+        <dsig:DigestValue>nWUSgv9v67tG4xETqOg1p2fW7b2vXFSSW8tUzVgOCUE=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

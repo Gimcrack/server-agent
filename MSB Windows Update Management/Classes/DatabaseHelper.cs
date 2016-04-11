@@ -19,6 +19,7 @@ namespace MSB_Windows_Update_Management
         public string queryGetUpdateId;
         public string queryGetServerId;
         public string queryGetServerStatus;
+        public string queryGetServerDiskId;
         public string queryUpdateApproved;
         public string queryUpdateHidden;
         public string queryGetEmailNotifications;
@@ -30,12 +31,17 @@ namespace MSB_Windows_Update_Management
         public string insertUpdateForServer;
         public string insertServer;
         public string insertUpdateBatch;
+        public string insertAlert;
+        public string insertServerDisk;
+        public string updateServerDisk;
         public string updateServer;
         public string updateUpdateForServer;
         public string setServerStatus;
         public string setServerAlert;
         public string setServerSoftwareVersion;
-        public string setUpdateInstalledAt;        
+        public string setUpdateInstalledAt;
+        public string deleteSupersededUpdates;
+        public string checkIn;
 
         public DatabaseHelper()
         {
@@ -59,6 +65,8 @@ namespace MSB_Windows_Update_Management
             queryGetServerId = "SELECT id FROM dbo.servers WHERE name = @hostname";
 
             queryGetServerStatus = "SELECT status FROM dbo.servers WHERE name = @hostname";
+
+            queryGetServerDiskId = "SELECT id FROM dbo.server_disks WHERE server_id = @server_id AND name = @name";
 
             queryUpdateApproved = "SELECT count(id) as count FROM dbo.update_details WHERE installed_flag=0 AND approved_flag=1 AND server_id=@server_id AND update_id=@update_id";
 
@@ -89,7 +97,13 @@ namespace MSB_Windows_Update_Management
             insertServer = "INSERT INTO dbo.servers (name, ip, operating_system_id, created_at, updated_at) VALUES (@hostname, @ip, 1, CAST(SYSDATETIME() AS VARCHAR(19)), CAST(SYSDATETIME() AS VARCHAR(19)))";
 
             insertUpdateBatch = "INSERT INTO dbo.update_batches (server_id, batch_id, result, created_at, updated_at) VALUES (@server_id, @batch_id, @result, CAST(SYSDATETIME() AS VARCHAR(19)), CAST(SYSDATETIME() AS VARCHAR(19)))";
-            
+
+            insertAlert = "INSERT INTO dbo.alerts (message, alertable_type, alertable_id, created_at, updated_at) VALUES (@message, @alertable_type, @alertable_id, CAST(SYSDATETIME() AS VARCHAR(19)), CAST(SYSDATETIME() AS VARCHAR(19)))";
+
+            insertServerDisk = "INSERT INTO dbo.server_disks ( name, label, server_id, size_gb, used_gb, free_gb, created_at, updated_at) VALUES (@name, @label, @server_id, @size_gb, @used_gb, @free_gb, CAST(SYSDATETIME() AS VARCHAR(19)), CAST(SYSDATETIME() AS VARCHAR(19)))";
+
+            updateServerDisk = "UPDATE dbo.server_disks SET label=@label, size_gb=@size_gb, used_gb=@used_gb, free_gb=@free_gb, updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) where id=@id";
+
             updateServer = "UPDATE dbo.servers SET " +
                 "last_windows_update = @last_windows_update, " +
                 "updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) " +
@@ -102,15 +116,23 @@ namespace MSB_Windows_Update_Management
                 "installed_flag = @installed_flag, " +
                 "mandatory_flag = @mandatory_flag, " +
                 "updated_at = CAST(SYSDATETIME() AS VARCHAR(19)) " +
-                "WHERE server_id = @server_id AND update_id = @update_id";
+                "WHERE server_id = @server_id AND update_id = @update_id and superseded_flag = 0";
 
             setServerStatus = "UPDATE dbo.servers SET status=@status, updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) WHERE name = @hostname";
+
+            checkIn = "UPDATE dbo.servers SET updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) WHERE name = @hostname";
 
             setServerAlert = "UPDATE dbo.servers SET alert=@alert, updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) WHERE name = @hostname";
 
             setServerSoftwareVersion = "UPDATE dbo.servers SET software_version=@version, updated_at=CAST(SYSDATETIME() AS VARCHAR(19)) WHERE name = @hostname";
 
             setUpdateInstalledAt = "UPDATE update_details SET install_batch=@install_batch, installed_at = CAST(SYSDATETIME() AS VARCHAR(19)) WHERE server_id = @server_id AND update_id = @update_id";
+
+            deleteSupersededUpdates = "UPDATE dbo.update_details " +
+                                      "SET hidden_flag = 1, superseded_flag = 1 " + 
+                                      "WHERE server_id = @server_id AND " + 
+                                      "update_id NOT IN ({0}) AND " +
+                                      "installed_flag = 0 AND approved_flag = 1";
 
         }
 

@@ -18,13 +18,7 @@ namespace MSB_Windows_Update_Management
             if (scProblem.Count > 0)
             {
                 string errorMessage = this.GetErrorMessage(scProblem);
-                Program.Mail.alert(errorMessage);
-                Program.Msg.alert(errorMessage);
-                Program.Dash.SetServerAlert(errorMessage);
-            }
-            else
-            {
-                Program.Dash.ClearServerAlert();
+                Program.Alert.ServerAlert(errorMessage);
             }
         }
         

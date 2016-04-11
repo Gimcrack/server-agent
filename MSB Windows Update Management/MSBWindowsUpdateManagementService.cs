@@ -32,9 +32,6 @@ namespace MSB_Windows_Update_Management
         ///  -- Reboots designated servers at the designated time
         ///  -- Monitors essential server services and reports when a service goes offline
         ///  
-        /// To Do:
-        ///  -- Custom service whitelist per server
-        ///  -- Target server notifications to specific people
         ///  
         /// </summary>
         public MSBWindowsUpdateManagement()
@@ -48,14 +45,16 @@ namespace MSB_Windows_Update_Management
                 //string message = "Windows Update Installation Report On TRIM7 Result for 'Update for Windows Server 2008 R2 x64 Edition (KB3135445)' : Operation Successful";
 
                 //mail.updateReport(message);
-                //upd.LookForUpdates();
+                //Program.Upd.LookForUpdates();
+
+                Program.Disk.GetInfo();
             }
         }
 
         /// <summary>
         /// The software version of this Windows Service
         /// </summary>
-        public string SoftwareVersion = "1.2.8.1";
+        public string SoftwareVersion = "1.5.4";
 
         private System.ComponentModel.IContainer components = null;
         
@@ -83,6 +82,9 @@ namespace MSB_Windows_Update_Management
 
             // Set the software version
             Program.Dash.SetServerSoftwareVersion(this.SoftwareVersion);
+
+            // Get the disk info
+            Program.Disk.GetInfo();
 
         }
 
@@ -115,7 +117,7 @@ namespace MSB_Windows_Update_Management
             lookForUpdatesTimer.Start();
 
             // Update Server Info timer    
-            updateServerInfoTimer.Interval = 5*1000*60; 
+            updateServerInfoTimer.Interval = 15*1000*60; 
             updateServerInfoTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.OnUpdateServerInfoTimer);
             updateServerInfoTimer.Start();
 
@@ -134,7 +136,7 @@ namespace MSB_Windows_Update_Management
         public void OnLookForUpdatesTimer(object sender, System.Timers.ElapsedEventArgs args)
         {
             lookForUpdatesTimer.Interval = 1000 * 60 * 60 * 8; // 8 hours
-            Program.Upd.LookForUpdates();    
+            Program.Upd.LookForUpdates();
         }
 
         /// <summary>
@@ -148,7 +150,9 @@ namespace MSB_Windows_Update_Management
         {
             updateServerInfoTimer.Interval = 1000 * 60 * 6; // 6 min
             Program.Dash.UpdateServerInfo();
+            Program.Disk.GetInfo();
             Program.Serv.CheckServices();
+            Program.Dash.CheckIn();
         }
 
         /// <summary>
@@ -202,9 +206,9 @@ namespace MSB_Windows_Update_Management
 
         public void RebootComputer()
         {
-            rebootCountdown = 120;
+            rebootCountdown = 30;
             Program.Dash.status( string.Format("Rebooting in {0}s",rebootCountdown.ToString()));
-            Process.Start("shutdown.exe", "-r -t 120 -c \"2min to reboot 'shutdown -a' aborts.\"");
+            Process.Start("shutdown.exe", "-r -t 30 -c \"'shutdown -a' aborts.\"");
 
             rebootComputerTimer.Interval = 15000;
             rebootComputerTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.OnRebootComputerTimer);
@@ -214,7 +218,17 @@ namespace MSB_Windows_Update_Management
         public void OnRebootComputerTimer(object sender, System.Timers.ElapsedEventArgs args)
         {
             rebootCountdown -= 15;
-            Program.Dash.status( string.Format("Rebooting in {0}s",rebootCountdown.ToString()));
+
+            if ( rebootCountdown <= 0)
+            {
+                Program.Dash.status(string.Format("Rebooting...", rebootCountdown.ToString()));
+                rebootComputerTimer.Stop();
+            }
+            else
+            {
+                Program.Dash.status(string.Format("Rebooting in {0}s", rebootCountdown.ToString()));
+            }
+            
         }
 
         public void AbortShutdown()

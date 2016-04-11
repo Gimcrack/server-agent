@@ -43,6 +43,9 @@ namespace MSB_Windows_Update_Management
             uInstallList = new UpdateCollection();
             uSearcher = uSession.CreateUpdateSearcher();
             List<String> updateList = new List<string>();
+            List<int> update_ids = new List<int>();
+
+            update_ids.Add(-1);
 
 
             Program.Dash.status("Looking For Available Updates...");
@@ -50,30 +53,38 @@ namespace MSB_Windows_Update_Management
             uSearcher.Online = true;
             uResult = uSearcher.Search("IsInstalled=0 and Type='Software'");
 
-            Program.Dash.status("There are " + uResult.Updates.Count + " available updates");
-
-
-            updateList.Add("Available Updates...");
-            foreach (IUpdate update in uResult.Updates)
+            if (uResult.Updates.Count > 0)
             {
-                this.processUpdate(update, updateList, uDownloadList, uInstallList);
+                Program.Dash.status("There are " + uResult.Updates.Count + " available updates");
+
+                updateList.Add("Available Updates...");
+                foreach (IUpdate update in uResult.Updates)
+                {
+                    this.processUpdate(update, updateList, uDownloadList, uInstallList);
+                    update_ids.Add(Program.Dash.getUpdateId(update));
+                }
+
+                Program.Dash.status("Cleaning up superseded updates.");
+                Program.Dash.CleanupUpdates(update_ids);
+
+                // download any missing updates
+                this.downloadUpdates(uDownloadList);
+
+                // install any queued updates
+                this.installUpdates(uInstallList);
+
+                // update the status of updates
+                this.UpdateUpdates(uResult.Updates);
+
+                Program.Events.WriteEntry(string.Join(System.Environment.NewLine, updateList), EventLogEntryType.Information);
+                Console.WriteLine(string.Join(System.Environment.NewLine, updateList));
             }
 
-            // download any missing updates
-            this.downloadUpdates(uDownloadList);
-
-            // install any queued updates
-            this.installUpdates(uInstallList);
-
-            // update the status of updates
-            this.updateUpdates();
+            Program.Dash.status("Cleaning up superseded updates.");
+            Program.Dash.CleanupUpdates(update_ids);
 
             // update server info
             Program.Dash.UpdateServerInfo();
-
-            Program.Events.WriteEntry(string.Join(System.Environment.NewLine, updateList), EventLogEntryType.Information);
-            Console.WriteLine(string.Join(System.Environment.NewLine, updateList));
-
             this.SetServerStatusNominal();
 
         }
@@ -127,7 +138,22 @@ namespace MSB_Windows_Update_Management
             }
         }
 
-        private void updateUpdates()
+        public void UpdateUpdates(UpdateCollection updates)
+        {
+            foreach (IUpdate update in updates)
+            {
+                update.IsHidden = Program.Dash.isUpdateHidden(update);
+
+                if (Program.Dash.isUpdateInDashboardForThisServer(update))
+                {
+                    Program.Events.WriteEntry("Updating update in the dashboard for server: " + Environment.MachineName + ", update : " + update.Title, EventLogEntryType.Information);
+                    Console.WriteLine("Updating update in the dashboard for server: " + Environment.MachineName + ", update : " + update.Title);
+                    Program.Dash.updateUpdateInDashboardForThisServer(update);
+                }
+            }
+        }
+
+        public void UpdateAllUpdates()
         {
             // TODO: Insert monitoring activities here.
             Program.Dash.status("Updating updates...");
@@ -264,11 +290,11 @@ namespace MSB_Windows_Update_Management
         {
             string message = string.Empty;
 
-            message = "Windows Update Installation Report On " + Environment.MachineName + Environment.NewLine;
+            message = "Windows Update Installation Report On <br/><br/>";
 
             foreach (string result in results)
             {
-                message += result + Environment.NewLine;
+                message += result + "</br>";
             }
 
             return message;
