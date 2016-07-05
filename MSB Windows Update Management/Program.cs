@@ -26,6 +26,7 @@ namespace MSB_Windows_Update_Management
         public static DiskHelper Disk = new DiskHelper();
         public static ServiceHelper Serv = new ServiceHelper();
         public static EventLog Events = new EventLog();
+        public static DashboardApiHelper Api = new DashboardApiHelper();
         
 
         /// <summary>

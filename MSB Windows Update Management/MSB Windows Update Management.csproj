@@ -76,6 +76,10 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -83,7 +87,10 @@
     <Reference Include="System.Management" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
@@ -95,11 +102,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\AlertHelper.cs" />
+    <Compile Include="Classes\DashboardApiHelper.cs" />
     <Compile Include="Classes\DashboardHelper.cs" />
     <Compile Include="Classes\DatabaseHelper.cs" />
     <Compile Include="Classes\DiskHelper.cs" />
     <Compile Include="Classes\MailHelper.cs" />
     <Compile Include="Classes\MessageHelper.cs" />
+    <Compile Include="Classes\ServerService.cs" />
     <Compile Include="Classes\ServiceControllerEx.cs" />
     <Compile Include="Classes\ServiceHelper.cs" />
     <Compile Include="ProjectInstaller.cs">
@@ -121,6 +130,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="MSB Windows Update Management_TemporaryKey.pfx" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProjectInstaller.resx">

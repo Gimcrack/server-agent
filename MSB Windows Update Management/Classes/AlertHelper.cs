@@ -50,7 +50,7 @@ namespace MSB_Windows_Update_Management
         public void AlertFallback( string errorMessage )
         {
             Program.Mail.alert(errorMessage);
-            Program.Msg.alert(errorMessage);
+            //Program.Msg.alert(errorMessage); // don't send any more texts until we get a plivo account
         }
 
         

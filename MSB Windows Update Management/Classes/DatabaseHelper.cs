@@ -20,6 +20,7 @@ namespace MSB_Windows_Update_Management
         public string queryGetServerId;
         public string queryGetServerStatus;
         public string queryGetServerDiskId;
+        public string queryGetServerServiceId;
         public string queryUpdateApproved;
         public string queryUpdateHidden;
         public string queryGetEmailNotifications;
@@ -47,6 +48,8 @@ namespace MSB_Windows_Update_Management
         {
             connectionString = "Server=msbsqlrpt;Database=ITDashboard;User Id=ITDashboardUser;Password=ITDashboardUser;";
 
+            //connectionString = "Server=msbsqltst;Database=ITDashboardDev;User Id=ITDashboardDevUser;Password=ITDashboardDevUser;";
+
             countUpdates = "SELECT count(*) as count FROM [dbo].[updates] WHERE title = @title";
 
             countUpdatesForServer = "SELECT count(*) as count " +
@@ -67,6 +70,8 @@ namespace MSB_Windows_Update_Management
             queryGetServerStatus = "SELECT status FROM dbo.servers WHERE name = @hostname";
 
             queryGetServerDiskId = "SELECT id FROM dbo.server_disks WHERE server_id = @server_id AND name = @name";
+
+            queryGetServerServiceId = "SELECT id FROM dbo.server_services WHERE server_id = @server_id AND name = @name";
 
             queryUpdateApproved = "SELECT count(id) as count FROM dbo.update_details WHERE installed_flag=0 AND approved_flag=1 AND server_id=@server_id AND update_id=@update_id";
 

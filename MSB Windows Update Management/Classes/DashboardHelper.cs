@@ -224,6 +224,28 @@ namespace MSB_Windows_Update_Management
             return 0;
         }
 
+        public int getServerServiceId(ServiceControllerEx svc)
+        {
+            int id;
+            SqlCommand command = new SqlCommand(Program.DB.queryGetServerServiceId);
+            command.Parameters.AddWithValue("@server_id", getServerId());
+            command.Parameters.AddWithValue("@name", svc.DisplayName);
+
+            DataTable rows = Program.DB.executeQuery(command);
+
+            if (rows.Rows.Count < 1)
+            {
+                return 0;
+            }
+
+            DataRow row = rows.Rows[0];
+
+            Int32.TryParse(row["id"].ToString(), out id);
+
+            if (id > 0) return id;
+            return 0;
+        }
+
         public int getUpdateId(IUpdate update)
         {
             int id;

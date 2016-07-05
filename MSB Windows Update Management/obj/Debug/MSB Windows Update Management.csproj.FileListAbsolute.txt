@@ -13,3 +13,6 @@ B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Upda
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Debug\MSB Windows Update Management.exe.manifest
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\obj\Debug\MSB Windows Update Management.application
 B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Debug\Newtonsoft.Json.dll
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Debug\System.Net.Http.Formatting.dll
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Debug\Newtonsoft.Json.xml
+B:\Git Workspace\Windows Projects\MSB Windows Update Management\MSB Windows Update Management\bin\Debug\System.Net.Http.Formatting.xml

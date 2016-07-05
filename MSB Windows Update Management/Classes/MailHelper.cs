@@ -13,9 +13,9 @@ namespace MSB_Windows_Update_Management
 {
     public partial class MailHelper
     {
-        public string mailServer = "smtp.mandrillapp.com";
-        public string mailUser = "jeremy.bloomstrom@gmail.com";
-        public string mailPass = "uTNf8fW-lIaod8sJ20eMtA";
+        public string mailServer = "smtp.sparkpostmail.com";
+        public string mailUser = "SMTP_Injection";
+        public string mailPass = "d1640dcdbe9982aa74fd0d01d6a307d3d02dafa7";
 
         public MailHelper()
         {

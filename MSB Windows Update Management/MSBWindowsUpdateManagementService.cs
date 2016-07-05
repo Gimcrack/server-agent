@@ -47,14 +47,14 @@ namespace MSB_Windows_Update_Management
                 //mail.updateReport(message);
                 //Program.Upd.LookForUpdates();
 
-                Program.Disk.GetInfo();
+                Program.Serv.CheckServices();
             }
         }
 
         /// <summary>
         /// The software version of this Windows Service
         /// </summary>
-        public string SoftwareVersion = "1.5.4";
+        public string SoftwareVersion = "1.7";
 
         private System.ComponentModel.IContainer components = null;
         
@@ -109,6 +109,7 @@ namespace MSB_Windows_Update_Management
         public System.Timers.Timer updateServerInfoTimer = new System.Timers.Timer();
         public System.Timers.Timer getServerStatusTimer = new System.Timers.Timer();
         public System.Timers.Timer rebootComputerTimer = new System.Timers.Timer();
+        
         private void SetupTimers()
         {
             // Check for available updates timer    
@@ -117,12 +118,12 @@ namespace MSB_Windows_Update_Management
             lookForUpdatesTimer.Start();
 
             // Update Server Info timer    
-            updateServerInfoTimer.Interval = 15*1000*60; 
+            updateServerInfoTimer.Interval = 15 * 1000 * 60; 
             updateServerInfoTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.OnUpdateServerInfoTimer);
             updateServerInfoTimer.Start();
 
             // Update Server Info timer    
-            getServerStatusTimer.Interval = 1000; 
+            getServerStatusTimer.Interval = 5000; 
             getServerStatusTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.OnGetServerStatusTimer);
             getServerStatusTimer.Start();
         }
@@ -148,10 +149,19 @@ namespace MSB_Windows_Update_Management
         /// <param name="args"></param>
         public void OnUpdateServerInfoTimer(object sender, System.Timers.ElapsedEventArgs args)
         {
-            updateServerInfoTimer.Interval = 1000 * 60 * 6; // 6 min
+            updateServerInfoTimer.Interval = 1000 * 60 * 10; // 6 min
             Program.Dash.UpdateServerInfo();
+
+            System.Threading.Thread.Sleep(5000);
+
             Program.Disk.GetInfo();
+
+            System.Threading.Thread.Sleep(5000);
+
             Program.Serv.CheckServices();
+
+            System.Threading.Thread.Sleep(5000);
+
             Program.Dash.CheckIn();
         }
 
